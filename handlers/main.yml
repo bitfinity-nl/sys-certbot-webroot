@@ -1,0 +1,22 @@
+---
+# Title: sys-certbot-webroot
+#
+# Author: bitfinity-nl
+# File: handlers/main.yml
+# 
+# Description:
+#   Certbot is a free, open source software tool for automatically using 
+#   Let’s Encrypt certificates on manually-administrated websites to enable HTTPS.
+#
+# Source(s):
+#   - https://linuxize.com/post/secure-apache-with-let-s-encrypt-on-ubuntu-18-04/
+
+- name: "reload_apache2"
+  systemd:
+    name: apache2
+    state: reloaded
+
+- name: "restart_apache2"
+  systemd:
+    name: apache2
+    state: restarted
