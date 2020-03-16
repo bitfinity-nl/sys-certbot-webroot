@@ -1,0 +1,48 @@
+---
+# Title: sys-certbot-webroot
+#
+# Author: bitfinity-nl
+# File: defaults/main.yml
+# 
+# Description:
+#   Certbot is a free, open source software tool for automatically using 
+#   Let’s Encrypt certificates on manually-administrated websites to enable HTTPS.
+#
+# Source(s):
+#   - https://linuxize.com/post/secure-apache-with-let-s-encrypt-on-ubuntu-18-04/
+
+
+# -- Letsencrypt --
+#
+# Variable(s)
+#    le_email  : 'support@example.nl'  # Set support e-mail address for Letsencrypt.
+#    le_domain : 'www.example.nl'      # Set domainname for retrieving certificate.
+#
+# Comment:
+#   Change settings below in the group_vars, playbook or here
+#
+le_email  : '{{ def_smtp_mail }}'
+le_domain : '{{ ansible_hostname }}'
+
+
+# -- Apache: sites-available/default-ssl.conf --
+#
+# Variable(s)
+#   le_ap_serveradmin             : 'support@yourdomain.com'                                      # Set mail address of the server admin.
+#   le_ap_servername              : 'yourdomain.com'                                              # Set domain name.
+#   le_ap_serveralias             : '{{ ansible_hostname }}.yourdomain.com'                       # Set serveralias.
+#   le_ap_documentroot            : '/var/www/html'                                               # Set path to documentroot.
+#   le_ap_sslcertificatefile      : '/etc/letsencrypt/live/{{ apache_servername }}/cert.pem'      # Set path to certkey.pem.
+#   le_ap_sslcertificatekeyfile   : '/etc/letsencrypt/live/{{ apache_servername }}/privkey.pem'   # Set path to privkey.pem.
+#   le_ap_sslcertificatechainfile : '/etc/letsencrypt/live/{{ apache_servername }}/chain.pem'     # Set path to chain.pem.
+#
+# Comment:
+#   Override variables here, in your playbook or in group_vars.
+#
+le_ap_serveradmin             : '{{ le_email }}'
+le_ap_servername              : '{{ le_domain }}'
+le_ap_serveralias             : '{{ ansible_hostname }}.{{ le_domain }}'
+le_ap_documentroot            : '/var/www/html'
+le_ap_sslcertificatefile      : '/etc/letsencrypt/live/{{ le_domain }}/cert.pem' 
+le_ap_sslcertificatekeyfile   : '/etc/letsencrypt/live/{{ le_domain }}/privkey.pem'
+le_ap_sslcertificatechainfile : '/etc/letsencrypt/live/{{ le_domain }}/fullchain.pem'
