@@ -72,8 +72,8 @@
 - name: "Enable configuration files"
   command: a2enconf letsencrypt ssl-params
 
-- name: "Enable default SSL site"
-  command: a2ensite default-ssl.conf
+#- name: "Enable default SSL site"
+#  command: a2ensite default-ssl.conf
 #  when:
 #    - le_ap_use_default_ssl == 'true'
 
