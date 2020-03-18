@@ -59,6 +59,28 @@
     - { src: 'apache2/letsencrypt.conf.j2', dest: '/etc/apache2/conf-available/letsencrypt.conf' }
     - { src: 'apache2/ssl-params.conf.j2', dest: '/etc/apache2/conf-available/ssl-params.conf' }
     - { src: 'default-ssl.conf.j2', dest: '/etc/apache2/sites-available/default-ssl.conf' }
+  
+- name: "Enable modules"
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - ssl
+    - headers
+    - http2
+
+- name: "Enable configuration files"
+  command: a2enconf letsencrypt ssl-params
+
+- name: "Enable default SSL site"
+  command: a2ensite default-ssl.conf
+#  when:
+#    - le_ap_use_default_ssl == 'true'
+
+#- name: "Disable default SSL site"
+#  command: a2ensite default-ssl.conf
+#  when:
+#    - le_ap_use_default_ssl == 'false'
 
 - name: "Check if path /etc/letsencrypt/live/{{ le_domain }} exist"
   stat:
@@ -77,28 +99,6 @@
   raw: "sudo certbot renew"
   notify: reload_apache2
   when: result.stat.exists == true
-  
-- name: "Enable modules"
-  apache2_module:
-    state: present
-    name: "{{ item }}"
-  with_items:
-    - ssl
-    - headers
-    - http2
-
-- name: "Enable configuration files"
-  command: a2enconf letsencrypt ssl-params
-
-- name: "Enable default SSL site"
-  command: a2ensite default-ssl.conf
-  when:
-    - le_ap_use_default_ssl == 'true'
-
-- name: "Disable default SSL site"
-  command: a2ensite default-ssl.conf
-  when:
-    - le_ap_use_default_ssl == 'false'
   
 - name: "Reload Apache2"
   systemd:
