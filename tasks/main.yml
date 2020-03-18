@@ -60,6 +60,24 @@
     - { src: 'apache2/ssl-params.conf.j2', dest: '/etc/apache2/conf-available/ssl-params.conf' }
     - { src: 'default-ssl.conf.j2', dest: '/etc/apache2/sites-available/default-ssl.conf' }
 
+- name: "Check if path /etc/letsencrypt/live/{{ le_domain }} exist"
+  stat:
+    path: "/etc/letsencrypt/live/{{ le_domain }}"
+  register: result
+
+- name: "Display if path /etc/letsencrypt/live/{{ le_domain }} exist"
+  debug:
+    msg: "{{ result.stat.exists }}"  
+    
+- name: "Retrieve Letsencrypt certificate for domain {{ le_domain }} with support e-mail {{ le_email }} if not exist"
+  raw: "certbot certonly --agree-tos -n --email {{ le_email }} --webroot -w /var/lib/letsencrypt/ -d {{ le_domain }}"
+  when: result.stat.exists == false
+    
+- name: "Renew Letsencrypt certificate for domain {{ le_domain }} with support e-mail {{ le_email }} if exists"
+  raw: "sudo certbot renew"
+  notify: reload_apache2
+  when: result.stat.exists == true
+  
 - name: "Enable modules"
   apache2_module:
     state: present
@@ -86,21 +104,3 @@
   systemd:
     name: apache2
     state: reloaded
-
-- name: "Check if path /etc/letsencrypt/live/{{ le_domain }} exist"
-  stat:
-    path: "/etc/letsencrypt/live/{{ le_domain }}"
-  register: result
-
-- name: "Display if path /etc/letsencrypt/live/{{ le_domain }} exist"
-  debug:
-    msg: "{{ result.stat.exists }}"  
-
-- name: "Retrieve Letsencrypt certificate for domain {{ le_domain }} with support e-mail {{ le_email }} if not exist"
-  raw: "certbot certonly --agree-tos -n --email {{ le_email }} --webroot -w /var/lib/letsencrypt/ -d {{ le_domain }}"
-  when: result.stat.exists == false
-    
-- name: "Renew Letsencrypt certificate for domain {{ le_domain }} with support e-mail {{ le_email }} if exists"
-  raw: "sudo certbot renew"
-  notify: reload_apache2
-  when: result.stat.exists == true
