@@ -28,7 +28,6 @@ le_domain : '{{ ansible_hostname }}'
 # -- Apache: sites-available/default-ssl.conf --
 #
 # Variable(s)
-#   le_ap_use_default_ssl         : 'true' or 'false'                                             # Whether to use default /etc/apache2/sites-available/default-ssl.conf.
 #   le_ap_serveradmin             : 'support@yourdomain.com'                                      # Set mail address of the server admin.
 #   le_ap_servername              : 'yourdomain.com'                                              # Set domain name.
 #   le_ap_serveralias             : '{{ ansible_hostname }}.yourdomain.com'                       # Set serveralias.
@@ -40,7 +39,6 @@ le_domain : '{{ ansible_hostname }}'
 # Comment:
 #   Override variables here, in your playbook or in group_vars.
 #
-le_ap_use_default_ssl         : 'true'
 le_ap_serveradmin             : '{{ le_email }}'
 le_ap_servername              : '{{ le_domain }}'
 le_ap_serveralias             : '{{ ansible_hostname }}.{{ le_domain }}'
