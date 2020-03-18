@@ -74,6 +74,13 @@
 
 - name: "Enable default SSL site"
   command: a2ensite default-ssl.conf
+  when:
+    - le_ap_use_default_ssl == 'true'
+
+- name: "Disable default SSL site"
+  command: a2ensite default-ssl.conf
+  when:
+    - le_ap_use_default_ssl == 'false'
   
 - name: "Reload Apache2"
   systemd:
