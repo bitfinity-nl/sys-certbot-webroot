@@ -72,6 +72,11 @@
 - name: "Enable configuration files"
   command: a2enconf letsencrypt ssl-params
 
+- name: "Reload Apache2"
+  systemd:
+    name: apache2
+    state: reloaded
+
 #- name: "Enable default SSL site"
 #  command: a2ensite default-ssl.conf
 #  when:
