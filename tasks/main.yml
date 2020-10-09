@@ -22,6 +22,7 @@
 - name: Enable universe repository
   apt_repository:
     repo: "{{ item }}"
+    update_cache: no
   loop:
     - "deb http://archive.ubuntu.com/ubuntu/ bionic universe"
     - "deb http://archive.ubuntu.com/ubuntu/ bionic-updates universe"
