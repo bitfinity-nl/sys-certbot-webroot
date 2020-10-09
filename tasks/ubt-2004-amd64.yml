@@ -11,35 +11,29 @@
 # Source(s):
 #   - https://linuxize.com/post/secure-apache-with-let-s-encrypt-on-ubuntu-18-04/
 
-- name: "Add additional repositories"
-  apt_repository:
-    repo: "{{ item }}"
-    state: present
-    update_cache: no
-  with_items:
-    - ppa:certbot/certbot
+- name: "Install snap packages"
+  snap:
+    name:
+    - snap
+    - refresh
+    - core
 
-- name: Enable universe repository
-  apt_repository:
-    repo: "{{ item }}"
-    update_cache: no
-  loop:
-    - "deb http://archive.ubuntu.com/ubuntu/ bionic universe"
-    - "deb http://archive.ubuntu.com/ubuntu/ bionic-updates universe"
-    - "deb http://security.ubuntu.com/ubuntu/ bionic-security universe"
-      
-- name: "Install packages"
+- name: "Remove Certbot OS packages"
   apt:
-    name: "{{ packages }}"
-    update_cache: yes 
-    state: present
-  vars:
-    packages:
-    - software-properties-common
+    name:
     - certbot
-    - python-certbot-apache
-    - apache2
+    state: absent
     
+- name: "Symlink /snap/bin/certbot to /usr/bin/certbot"
+  file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    owner: root
+    group: root
+    state: link   
+    
+# ----    
+       
 - name: "Generate strong DH (Diffie-Hellman) Group (4096 bits)"
   openssl_dhparam:
     path: /etc/ssl/certs/dhparam.pem
