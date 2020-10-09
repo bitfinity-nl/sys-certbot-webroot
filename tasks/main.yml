@@ -20,8 +20,6 @@
 - name: "Install snap packages"
   snap:
     name:
-      - snap
-      - refresh
       - core
 
 - name: "Install certbot packages"
