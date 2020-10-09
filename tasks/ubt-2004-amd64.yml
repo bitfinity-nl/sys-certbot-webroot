@@ -1,0 +1,103 @@
+---
+# Title: sys-certbot-webroot
+#
+# Author: bitfinity-nl
+# File: tasks/main.yml
+# 
+# Description:
+#   Certbot is a free, open source software tool for automatically using 
+#   Let’s Encrypt certificates on manually-administrated websites to enable HTTPS.
+#
+# Source(s):
+#   - https://linuxize.com/post/secure-apache-with-let-s-encrypt-on-ubuntu-18-04/
+
+- name: "Add additional repositories"
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+    update_cache: no
+  with_items:
+    - ppa:certbot/certbot
+
+- name: Enable universe repository
+  apt_repository:
+    repo: "{{ item }}"
+    update_cache: no
+  loop:
+    - "deb http://archive.ubuntu.com/ubuntu/ bionic universe"
+    - "deb http://archive.ubuntu.com/ubuntu/ bionic-updates universe"
+    - "deb http://security.ubuntu.com/ubuntu/ bionic-security universe"
+      
+- name: "Install packages"
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes 
+    state: present
+  vars:
+    packages:
+    - software-properties-common
+    - certbot
+    - python-certbot-apache
+    - apache2
+    
+- name: "Generate strong DH (Diffie-Hellman) Group (4096 bits)"
+  openssl_dhparam:
+    path: /etc/ssl/certs/dhparam.pem
+    size: 4096
+    
+- name: "Create path for for validating request to /var/lib/letsencrypt/.well-known"
+  file:
+    path: /var/lib/letsencrypt/.well-known
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: g+s
+
+- name: "Transfer templates"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: 'apache2/letsencrypt.conf.j2', dest: '/etc/apache2/conf-available/letsencrypt.conf' }
+    - { src: 'apache2/ssl-params.conf.j2', dest: '/etc/apache2/conf-available/ssl-params.conf' }
+    - { src: 'default-ssl.conf.j2', dest: '/etc/apache2/sites-available/default-ssl.conf' }
+  
+- name: "Enable modules"
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - ssl
+    - headers
+    - http2
+
+- name: "Enable configuration files"
+  command: a2enconf letsencrypt ssl-params
+
+- name: "Reload Apache2"
+  systemd:
+    name: apache2
+    state: reloaded
+
+- name: "Check if path /etc/letsencrypt/live/{{ le_domain }} exist"
+  stat:
+    path: "/etc/letsencrypt/live/{{ le_domain }}"
+  register: result
+
+- name: "Display if path /etc/letsencrypt/live/{{ le_domain }} exist"
+  debug:
+    msg: "{{ result.stat.exists }}"  
+    
+- name: "Retrieve Letsencrypt certificate for domain {{ le_domain }} with support e-mail {{ le_email }} if not exist"
+  raw: "certbot certonly --agree-tos -n --email {{ le_email }} --webroot -w /var/lib/letsencrypt/ -d {{ le_domain }}"
+  when: result.stat.exists == false
+    
+- name: "Renew Letsencrypt certificate for domain {{ le_domain }} with support e-mail {{ le_email }} if exists"
+  raw: "sudo certbot renew"
+  notify: reload_apache2
+  when: result.stat.exists == true
+  
+- name: "Reload Apache2"
+  systemd:
+    name: apache2
+    state: reloaded
