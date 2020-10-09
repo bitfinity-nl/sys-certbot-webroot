@@ -11,19 +11,24 @@
 # Source(s):
 #   - https://linuxize.com/post/secure-apache-with-let-s-encrypt-on-ubuntu-18-04/
 
-- name: "Install snap packages"
-  snap:
-    name:
-    - snap
-    - refresh
-    - core
-
 - name: "Remove Certbot OS packages"
   apt:
     name:
     - certbot
     state: absent
-    
+          
+- name: "Install snap packages"
+  snap:
+    name:
+      - snap
+      - refresh
+      - core
+
+- name: "Install certbot packages"
+  snap:
+    name: certbot
+    classic: yes
+
 - name: "Symlink /snap/bin/certbot to /usr/bin/certbot"
   file:
     src: /snap/bin/certbot
