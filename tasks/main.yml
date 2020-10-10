@@ -16,7 +16,13 @@
     name:
     - certbot
     state: absent
-          
+
+- name: "Install apt packages"
+  apt:
+    name:
+    - apache2
+    state: absent
+    
 - name: "Install snap packages"
   snap:
     name:
